@@ -15,7 +15,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&family=Tajawal:wght@700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
   html, body { height: 100%; }
@@ -50,7 +50,7 @@
   }
 
   body {
-    font-family: 'Cairo', 'Tajawal', 'Tahoma', sans-serif;
+    font-family: 'IBM Plex Sans Arabic', 'Tahoma', sans-serif;
     font-weight: 700;
     overflow: hidden;
     color: var(--ink);
@@ -97,11 +97,39 @@
     -webkit-overflow-scrolling: touch;
   }
   .page.active { opacity: 1; pointer-events: auto; }
+  body.booting #pages,
+  body.booting #musicBtn,
+  body.booting #instaBtn,
+  body.booting .floaties { visibility: hidden; pointer-events: none; }
+  #bootScreen {
+    position: fixed; inset: 0; z-index: 4000;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: #fffaf6; color: #7a4a63; text-align: center;
+    padding: 24px;
+    transition: opacity 0.55s ease;
+  }
+  #bootScreen.hide { opacity: 0; pointer-events: none; }
+  #bootScreen img { width: min(42vw, 160px); height: auto; margin-bottom: 16px; animation: catBounce 3s ease-in-out infinite; }
+  #bootScreen h2 {
+    font-family: 'Aref Ruqaa', serif;
+    font-size: clamp(22px, 6vw, 30px);
+    margin-bottom: 8px;
+  }
+  #bootScreen p { font-size: 14px; margin-bottom: 18px; opacity: 0.85; }
+  .boot-bar {
+    width: min(220px, 64vw); height: 8px; border-radius: 99px;
+    background: #f3d3e0; overflow: hidden;
+  }
+  .boot-bar span {
+    display: block; height: 100%; width: 0;
+    background: #a5537c; border-radius: 99px;
+    transition: width 0.25s ease;
+  }
 
   #page-msg1 { padding: 0 !important; justify-content: center; overflow: hidden; background: #fdf6ea; }
   #page-card2 { justify-content: flex-start; padding-top: calc(64px + env(safe-area-inset-top)) !important; }
 
-  h1 { font-size: clamp(20px, 5.4vw, 28px); font-weight: 800; margin-bottom: 10px; color: var(--accent-2); }
+  h1 { font-family: 'Aref Ruqaa', 'IBM Plex Sans Arabic', serif; font-size: clamp(22px, 6vw, 32px); font-weight: 700; margin-bottom: 10px; color: var(--accent-2); }
   p { font-size: clamp(14px, 3.6vw, 16px); opacity: 0.95; margin-bottom: 24px; font-weight: 700; }
   svg { display: block; }
 
@@ -195,7 +223,7 @@
     color: #fffaf6;
     cursor: pointer;
     padding: 10px 18px;
-    font-family: 'Tajawal', sans-serif;
+    font-family: 'IBM Plex Sans Arabic', 'Tahoma', sans-serif;
     font-size: 14px;
     font-weight: 700;
   }
@@ -267,7 +295,7 @@
 
   .letter-msg-text {
     color: var(--msg-color);
-    font-family: 'Tajawal', sans-serif;
+    font-family: 'IBM Plex Sans Arabic', 'Tahoma', sans-serif;
     line-height: 1.55;
     text-align: center;
     font-size: clamp(11px, 2.7vw, 16px);
@@ -354,7 +382,7 @@
   }
   .frame-text {
     color: var(--msg-color);
-    font-family: 'Tajawal', sans-serif;
+    font-family: 'IBM Plex Sans Arabic', 'Tahoma', sans-serif;
     line-height: 1.45;
     text-align: center;
     font-size: clamp(11px, 2.5vw, 14px);
@@ -442,7 +470,7 @@
     border-bottom: 1px solid #e6cfd8;
     background: #fffdfb;
     color: #7a4a63;
-    font-family: 'Tajawal', sans-serif;
+    font-family: 'IBM Plex Sans Arabic', 'Tahoma', sans-serif;
     font-weight: 700;
     font-size: clamp(20px, 7vw, 28px);
     cursor: pointer;
@@ -490,7 +518,7 @@
     border: 1.5px solid #7a4a63;
     background: #fff;
     color: #7a4a63;
-    font-family: 'Tajawal', sans-serif;
+    font-family: 'IBM Plex Sans Arabic', 'Tahoma', sans-serif;
     font-weight: 700;
     font-size: 20px;
     cursor: pointer;
@@ -786,7 +814,7 @@
     inset: 22% 16%;
     z-index: 2;
     color: var(--ink);
-    font-family: 'Cairo', 'Tajawal', sans-serif;
+    font-family: 'IBM Plex Sans Arabic', 'Tahoma', sans-serif;
     font-weight: 700;
     text-align: center;
     line-height: 1.35;
@@ -976,103 +1004,20 @@
     }
   }
 
-
-/* ===== شاشة التحميل ===== */
-#siteLoader{
-  position:fixed; inset:0; z-index:10000;
-  display:flex; align-items:center; justify-content:center;
-  flex-direction:column; gap:12px; padding:24px;
-  text-align:center; background:var(--paper); color:var(--ink);
-  opacity:1; visibility:visible;
-  transition:opacity .55s ease, visibility .55s ease;
-}
-#siteLoader.hidden{opacity:0;visibility:hidden;pointer-events:none}
-#siteLoader .loader-cat{
-  width:min(38vw,22dvh,145px); height:auto; object-fit:contain;
-  animation:loaderCatFloat 2.2s ease-in-out infinite;
-  filter:drop-shadow(0 8px 12px rgba(122,74,99,.10));
-}
-#siteLoader .loader-title{
-  color:var(--accent-2); font-size:clamp(18px,5vw,25px);
-  font-weight:800; margin:0;
-}
-#siteLoader .loader-text{
-  color:var(--ink); font-size:clamp(12px,3.4vw,15px);
-  font-weight:700; margin:0; opacity:.82;
-}
-#siteLoader .loader-ring{
-  width:34px;height:34px;border:3px solid #ead1dc;
-  border-top-color:var(--accent);border-radius:50%;
-  animation:loaderSpin .8s linear infinite;margin-top:2px;
-}
-#siteLoader .loader-progress{
-  width:min(220px,68vw);height:5px;overflow:hidden;
-  border-radius:20px;background:#f1e1e8;
-}
-#siteLoader .loader-progress>span{
-  display:block;width:0;height:100%;border-radius:inherit;
-  background:var(--accent);transition:width .22s ease;
-}
-@keyframes loaderSpin{to{transform:rotate(360deg)}}
-@keyframes loaderCatFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-
-
-/* ===== زخارف خفيفة خاصة بالألعاب ===== */
-#page-games::before,
-#page-sudoku::before,
-#page-draw::before,
-#page-chess::before,
-#page-hand::before{
-  content:"";
-  position:absolute; inset:0; z-index:0; pointer-events:none; opacity:.38;
-  background-repeat:repeat;
-  background-size:112px 112px;
-}
-#page-games::before{
-  background-image:
-    radial-gradient(circle at 18px 20px, rgba(165,83,124,.10) 0 2px, transparent 2.5px),
-    radial-gradient(circle at 76px 74px, rgba(201,138,166,.12) 0 3px, transparent 3.5px);
-}
-#page-sudoku::before{
-  background-image:
-    linear-gradient(rgba(165,83,124,.055) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(165,83,124,.055) 1px, transparent 1px);
-  background-size:28px 28px;
-  mask-image:linear-gradient(to bottom,transparent,black 18%,black 82%,transparent);
-}
-#page-draw::before{
-  background-image:
-    radial-gradient(ellipse at 25px 30px, transparent 0 10px, rgba(165,83,124,.08) 11px 12px, transparent 13px),
-    radial-gradient(circle at 84px 84px, rgba(201,138,166,.10) 0 2px, transparent 3px);
-}
-#page-chess::before{
-  background-image:
-    radial-gradient(circle at 26px 28px, rgba(165,83,124,.10) 0 4px, transparent 4.5px),
-    radial-gradient(circle at 84px 84px, rgba(201,138,166,.10) 0 4px, transparent 4.5px);
-}
-#page-hand::before{
-  background-image:
-    linear-gradient(18deg, transparent 44%, rgba(165,83,124,.07) 45% 46%, transparent 47%),
-    linear-gradient(-18deg, transparent 54%, rgba(201,138,166,.07) 55% 56%, transparent 57%);
-}
-
 </style>
 
 </head>
-<body>
-
-<div id="siteLoader" aria-label="جاري تجهيز الموقع">
-  <img class="loader-cat" src="cat-hello.png" alt="">
-  <h1 class="loader-title">جاري تجهيز هديتك...</h1>
-  <p class="loader-text" id="loaderText">لحظة صغيرة، بنجهّز كل شيء إلك 🤍</p>
-  <div class="loader-ring" aria-hidden="true"></div>
-  <div class="loader-progress" aria-hidden="true"><span id="loaderProgress"></span></div>
-</div>
-
+<body class="booting">
 
 <div class="blob pink"></div>
 <div class="blob blue"></div>
 <div class="ripple" aria-hidden="true"></div>
+<div id="bootScreen">
+  <img src="cat-hello.png" alt="">
+  <h2>هدية لينتي</h2>
+  <p id="bootText">عم نحضر هديتك...</p>
+  <div class="boot-bar"><span id="bootBar"></span></div>
+</div>
 
 <div class="floaties" id="floatiesLayer"></div>
 
@@ -1359,6 +1304,56 @@
 
 <script>
 var letterTimers = [];
+
+  (function preloadGift() {
+    var assets = [
+      'cat-hello.png','cat-happy.png','cat-angry.png','cat-sad.png',
+      'icon-yes.png','icon-no.png','icon-letter.png','icon-bouquet.png','icon-games.png','icon-memories.png',
+      'envelope-closed.png','envelope-open.png','envelope-letter.png',
+      'bouquet.png','frame-big-bouquet.png','frame-small-flower.png',
+      'frame-memory-all.png','frame-memory-caption.png',
+      'frame-memory-1.png','frame-memory-2.png','frame-memory-3.png',
+      'frame-memory-4.png','frame-memory-5.png','frame-memory-6.png',
+      'memory-1.jpg','memory-2.jpg','memory-3.jpg','memory-4.jpg','memory-5.jpg','memory-6.jpg',
+      'warda.png','song.mp3','click.mp3'
+    ];
+    var done = 0, bar = document.getElementById('bootBar'), text = document.getElementById('bootText');
+    function tick() {
+      done++;
+      var pct = Math.min(100, Math.round(done / assets.length * 100));
+      if (bar) bar.style.width = pct + '%';
+      if (done >= assets.length) finish();
+    }
+    function finish() {
+      if (finish.ok) return;
+      finish.ok = true;
+      if (text) text.textContent = 'تفضلي...';
+      setTimeout(function() {
+        document.body.classList.remove('booting');
+        var boot = document.getElementById('bootScreen');
+        if (boot) {
+          boot.classList.add('hide');
+          setTimeout(function() { boot.remove(); }, 600);
+        }
+      }, 280);
+    }
+    assets.forEach(function(src) {
+      if (/\.mp3$/i.test(src)) {
+        var a = new Audio();
+        a.preload = 'auto';
+        a.oncanplaythrough = tick;
+        a.onerror = tick;
+        a.src = src;
+        a.load();
+      } else {
+        var img = new Image();
+        img.onload = tick;
+        img.onerror = tick;
+        img.src = src;
+      }
+    });
+    setTimeout(finish, 12000);
+  })();
 
   function clearLetterTimers() {
     letterTimers.forEach(function(id) { clearTimeout(id); clearInterval(id); });
@@ -3312,123 +3307,6 @@ var letterTimers = [];
 
 </script>
 
-
-
-<script>
-(function(){
-  const loader=document.getElementById('siteLoader');
-  const bar=document.getElementById('loaderProgress');
-  const msg=document.getElementById('loaderText');
-  if(!loader) return;
-
-  const assets=new Set();
-  const startedAt=Date.now();
-  const MAX_WAIT=12000; // Safety limit: the site always opens even if an asset is unavailable.
-
-  function addAsset(value){
-    if(!value) return;
-    const v=value.trim();
-    if(/^(data:|blob:|https?:|\/\/|#|mailto:|javascript:)/i.test(v)) return;
-    if(/\.(png|jpe?g|webp|gif|svg|mp3|wav|ogg|m4a)(?:[?#].*)?$/i.test(v)) assets.add(v);
-  }
-
-  // Existing HTML assets.
-  document.querySelectorAll('img[src],audio[src],source[src],link[href]').forEach(el=>{
-    addAsset(el.getAttribute('src') || el.getAttribute('href'));
-  });
-
-  // Local assets referenced inside inline CSS/JS.
-  const html=document.documentElement.outerHTML;
-  const quoted=/["'`](?!data:|blob:|https?:|\/\/)([^"'`\s?#]+\.(?:png|jpe?g|webp|gif|svg|mp3|wav|ogg|m4a))(?:[?#][^"'`\s]*)?["'`]/gi;
-  let m;
-  while((m=quoted.exec(html))) addAsset(m[1]);
-
-  const list=[...assets];
-  let done=0;
-  const total=list.length;
-
-  function update(){
-    const pct=total ? Math.min(100,Math.round(done/total*100)) : 100;
-    if(bar) bar.style.width=pct+'%';
-    if(msg) msg.textContent=pct<100 ? 'لحظة صغيرة، بنجهّز كل شيء إلك 🤍' : 'خلص، كل شيء جاهز 🤍';
-  }
-
-  function load(url){
-    return new Promise(resolve=>{
-      let finished=false;
-      const finish=()=>{
-        if(finished)return;
-        finished=true;
-        done++;
-        update();
-        resolve();
-      };
-
-      if(/\.(mp3|wav|ogg|m4a)(?:[?#].*)?$/i.test(url)){
-        const a=new Audio();
-        a.preload='auto';
-        a.addEventListener('canplaythrough',finish,{once:true});
-        a.addEventListener('loadeddata',finish,{once:true});
-        a.addEventListener('error',finish,{once:true});
-        a.src=url;
-        a.load();
-      }else{
-        const im=new Image();
-        im.decoding='async';
-        im.onload=finish;
-        im.onerror=finish;
-        im.src=url;
-        if(im.complete) finish();
-      }
-    });
-  }
-
-  async function start(){
-    update();
-
-    // Load several assets together for faster mobile startup.
-    const batch=6;
-    for(let i=0;i<list.length;i+=batch){
-      if(Date.now()-startedAt>=MAX_WAIT) break;
-      await Promise.all(list.slice(i,i+batch).map(load));
-    }
-
-    // Let the browser finish decoding/painting and fonts settle when available.
-    if(document.fonts && document.fonts.ready){
-      await Promise.race([
-        document.fonts.ready,
-        new Promise(r=>setTimeout(r,1800))
-      ]);
-    }
-    await new Promise(requestAnimationFrame);
-    await new Promise(requestAnimationFrame);
-
-    if(msg) msg.textContent='جاهزة 🤍';
-    if(bar) bar.style.width='100%';
-    loader.classList.add('hidden');
-    setTimeout(()=>loader.remove(),650);
-  }
-
-  // Absolute safety: never leave the user trapped on the loading screen.
-  const safety=setTimeout(()=>{
-    if(!loader.classList.contains('hidden')){
-      if(msg) msg.textContent='جاهزة 🤍';
-      if(bar) bar.style.width='100%';
-      loader.classList.add('hidden');
-      setTimeout(()=>loader.remove(),650);
-    }
-  },MAX_WAIT+500);
-
-  function boot(){
-    start().finally(()=>clearTimeout(safety));
-  }
-
-  if(document.readyState==='loading')
-    document.addEventListener('DOMContentLoaded',boot,{once:true});
-  else
-    boot();
-})();
-</script>
 
 </body>
 </html>
