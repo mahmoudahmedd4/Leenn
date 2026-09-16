@@ -101,6 +101,28 @@
   body.booting #musicBtn,
   body.booting #instaBtn,
   body.booting .floaties { visibility: hidden; pointer-events: none; }
+  /* حركات شاشة التحميل فقط */
+  #bootScreen::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(circle at 18% 28%, rgba(255,194,218,0.26), transparent 42%),
+      radial-gradient(circle at 82% 72%, rgba(243,208,228,0.22), transparent 44%);
+    animation: rippleShift 20s ease-in-out infinite;
+  }
+  #bootScreen > * { position: relative; z-index: 2; }
+  #bootScreen h2 { animation: bootTitle 1.8s ease-in-out infinite; }
+  #bootScreen p { min-height: 22px; animation: bootTextPulse 1.5s ease-in-out infinite; }
+  .boot-bar { position: relative; box-shadow: 0 4px 18px rgba(165,83,124,0.10); }
+  .boot-bar span { position: relative; overflow: hidden; }
+  .boot-bar span::after {
+    content: ''; position: absolute; top: 0; bottom: 0; width: 45px;
+    background: rgba(255,255,255,0.42); filter: blur(5px);
+    animation: bootShine 1.2s linear infinite;
+  }
+  @keyframes bootTitle { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+  @keyframes bootTextPulse { 0%,100% { opacity:.65; } 50% { opacity:1; } }
+  @keyframes bootShine { from { left:-55px; } to { left:110%; } }
+
   #bootScreen {
     position: fixed; inset: 0; z-index: 4000;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -1306,7 +1328,7 @@
 var letterTimers = [];
 
   (function preloadGift() {
-    /* كل الصور + الأصوات يجب أن تكتمل قبل فتح الموقع */
+    /* نظام تحميل ثابت لـ Acode: ملف واحد في كل مرة حتى لا تتعلق WebView عند نسبة ثابتة */
     var assets = [
       'cat-hello.png','cat-happy.png','cat-angry.png','cat-sad.png',
       'icon-yes.png','icon-no.png','icon-letter.png','icon-bouquet.png','icon-games.png','icon-memories.png',
@@ -1316,88 +1338,85 @@ var letterTimers = [];
       'frame-memory-1.png','frame-memory-2.png','frame-memory-3.png',
       'frame-memory-4.png','frame-memory-5.png','frame-memory-6.png',
       'memory-1.jpg','memory-2.jpg','memory-3.jpg','memory-4.jpg','memory-5.jpg','memory-6.jpg',
-      'warda.png',
-      'song.mp3','click.mp3'
+      'warda.png','song.mp3','click.mp3'
     ];
 
-    var done = 0;
-    var finished = false;
+    var total = assets.length, done = 0, index = 0, finished = false;
     var bar = document.getElementById('bootBar');
     var text = document.getElementById('bootText');
-    window.__preloadedAudioUrls = {};
+    var dots = 0;
+    window.__preloadedImages = window.__preloadedImages || {};
+    window.__preloadedAudio = window.__preloadedAudio || {};
 
     function updateProgress() {
-      var pct = Math.min(100, Math.round(done / assets.length * 100));
+      var pct = Math.floor((done / total) * 100);
       if (bar) bar.style.width = pct + '%';
-      if (text) text.textContent = 'عم نحضر هديتك... ' + pct + '%';
+      if (text) text.textContent = 'عم نحضّر هديتك... ' + pct + '% ' + '.'.repeat(dots);
     }
+    setInterval(function(){ if(!finished){ dots=(dots+1)%4; updateProgress(); } },500);
 
-    function finish() {
-      if (finished || done < assets.length) return;
-      finished = true;
-      if (bar) bar.style.width = '100%';
-      if (text) text.textContent = 'تفضلي...';
-      setTimeout(function() {
+    function finish(){
+      if(finished || done !== total) return;
+      finished=true;
+      if(bar) bar.style.width='100%';
+      if(text) text.textContent='خلصت! 💗';
+      setTimeout(function(){
         document.body.classList.remove('booting');
-        var boot = document.getElementById('bootScreen');
-        if (boot) {
-          boot.classList.add('hide');
-          setTimeout(function() { boot.remove(); }, 600);
-        }
-      }, 280);
+        var boot=document.getElementById('bootScreen');
+        if(boot){ boot.classList.add('hide'); setTimeout(function(){boot.remove();},600); }
+      },650);
     }
 
-    function completed() {
-      done++;
-      updateProgress();
-      finish();
+    function next(){
+      done++; index++; updateProgress();
+      if(done>=total) finish(); else loadOne(assets[index],0);
     }
 
-    function preloadImage(src, attempt) {
-      if (finished) return;
-      var img = new Image();
-      img.decoding = 'async';
-      img.fetchPriority = 'high';
-      var completedOnce = false;
+    function loadOne(src, attempt){
+      if(finished) return;
+      if(/\.mp3$/i.test(src)) loadAudio(src,attempt);
+      else loadImage(src,attempt);
+    }
 
-      img.onload = function() {
-        if (completedOnce || finished) return;
-        completedOnce = true;
-        var ready = (typeof img.decode === 'function') ? img.decode().catch(function(){}) : Promise.resolve();
-        ready.then(completed);
+    function loadImage(src,attempt){
+      var img=new Image(), counted=false;
+      function ok(){
+        if(counted||finished)return;
+        counted=true;
+        window.__preloadedImages[src]=img;
+        next();
+      }
+      img.onload=ok;
+      img.onerror=function(){
+        if(counted||finished)return;
+        setTimeout(function(){loadImage(src,attempt+1);},Math.min(5000,700+attempt*400));
       };
-
-      img.onerror = function() {
-        if (completedOnce || finished) return;
-        setTimeout(function() { preloadImage(src, attempt + 1); }, Math.min(5000, 1000 + attempt * 300));
-      };
-      img.src = src;
+      img.src=src;
     }
 
-    function preloadAudio(src, attempt) {
-      if (finished) return;
-      var completedOnce = false;
-
-      /* fetch() حتى نهاية الملف: لا نعتبر الصوت جاهزًا إلا بعد تنزيله كاملًا */
-      fetch(src, { cache: 'force-cache' }).then(function(response) {
-        if (!response.ok) throw new Error('Audio load failed: ' + response.status);
-        return response.blob();
-      }).then(function(blob) {
-        if (completedOnce || finished) return;
-        completedOnce = true;
-        window.__preloadedAudioUrls[src] = URL.createObjectURL(blob);
-        completed();
-      }).catch(function() {
-        if (completedOnce || finished) return;
-        setTimeout(function() { preloadAudio(src, attempt + 1); }, Math.min(5000, 1000 + attempt * 300));
-      });
+    function loadAudio(src,attempt){
+      var audio=document.createElement('audio'), counted=false;
+      audio.preload='auto'; audio.src=src;
+      function ok(){
+        if(counted||finished)return;
+        counted=true;
+        window.__preloadedAudio[src]=audio;
+        /* loadeddata هو الحد الموثوق في Acode؛ لا نعتمد على canplaythrough لأنه قد لا يطلق في WebView */
+        next();
+      }
+      audio.addEventListener('loadeddata',ok,{once:true});
+      audio.addEventListener('canplay',ok,{once:true});
+      audio.addEventListener('error',function(){
+        if(counted||finished)return;
+        setTimeout(function(){loadAudio(src,attempt+1);},Math.min(5000,900+attempt*400));
+      },{once:true});
+      try{audio.load();}catch(e){
+        setTimeout(function(){loadAudio(src,attempt+1);},Math.min(5000,900+attempt*400));
+      }
     }
 
     updateProgress();
-    assets.forEach(function(src) {
-      if (/\.mp3$/i.test(src)) preloadAudio(src, 0);
-      else preloadImage(src, 0);
-    });
+    loadOne(assets[0],0);
   })();
 
   function clearLetterTimers() {
