@@ -1378,41 +1378,71 @@ var letterTimers = [];
       else loadImage(src,attempt);
     }
 
+    var MAX_ATTEMPTS = 6; /* بعد هالعدد من المحاولات، تخطى الملف بدل ما تعلّق للأبد */
+    var WATCHDOG_MS = 6000; /* إذا الملف ما استجاب خلالها (لا نجاح ولا خطأ)، نعتبرها محاولة فاشلة */
+
     function loadImage(src,attempt){
-      var img=new Image(), counted=false;
-      function ok(){
+      var img=new Image(), counted=false, watchdog;
+      function settle(fn){
         if(counted||finished)return;
         counted=true;
-        window.__preloadedImages[src]=img;
-        next();
+        clearTimeout(watchdog);
+        fn();
+      }
+      function ok(){ settle(function(){ window.__preloadedImages[src]=img; next(); }); }
+      function fail(){
+        settle(function(){
+          if(attempt+1>=MAX_ATTEMPTS){
+            console.warn('⚠️ فشل تحميل الصورة نهائياً، تم تخطيها:',src);
+            next();
+          } else {
+            setTimeout(function(){loadImage(src,attempt+1);},Math.min(5000,700+attempt*400));
+          }
+        });
       }
       img.onload=ok;
-      img.onerror=function(){
-        if(counted||finished)return;
-        setTimeout(function(){loadImage(src,attempt+1);},Math.min(5000,700+attempt*400));
-      };
+      img.onerror=fail;
+      watchdog=setTimeout(function(){
+        console.warn('⏱️ الصورة ما استجابت خلال',WATCHDOG_MS+'ms، إعادة محاولة:',src);
+        fail();
+      },WATCHDOG_MS);
       img.src=src;
     }
 
     function loadAudio(src,attempt){
-      var audio=document.createElement('audio'), counted=false;
+      var audio=document.createElement('audio'), counted=false, watchdog;
       audio.preload='auto'; audio.src=src;
-      function ok(){
+      function settle(fn){
         if(counted||finished)return;
         counted=true;
-        window.__preloadedAudio[src]=audio;
-        /* loadeddata هو الحد الموثوق في Acode؛ لا نعتمد على canplaythrough لأنه قد لا يطلق في WebView */
-        next();
+        clearTimeout(watchdog);
+        fn();
+      }
+      function ok(){
+        settle(function(){
+          window.__preloadedAudio[src]=audio;
+          /* loadeddata هو الحد الموثوق في Acode؛ لا نعتمد على canplaythrough لأنه قد لا يطلق في WebView */
+          next();
+        });
+      }
+      function fail(){
+        settle(function(){
+          if(attempt+1>=MAX_ATTEMPTS){
+            console.warn('⚠️ فشل تحميل الصوت نهائياً، تم تخطيه:',src);
+            next();
+          } else {
+            setTimeout(function(){loadAudio(src,attempt+1);},Math.min(5000,900+attempt*400));
+          }
+        });
       }
       audio.addEventListener('loadeddata',ok,{once:true});
       audio.addEventListener('canplay',ok,{once:true});
-      audio.addEventListener('error',function(){
-        if(counted||finished)return;
-        setTimeout(function(){loadAudio(src,attempt+1);},Math.min(5000,900+attempt*400));
-      },{once:true});
-      try{audio.load();}catch(e){
-        setTimeout(function(){loadAudio(src,attempt+1);},Math.min(5000,900+attempt*400));
-      }
+      audio.addEventListener('error',fail,{once:true});
+      watchdog=setTimeout(function(){
+        console.warn('⏱️ الصوت ما استجاب خلال',WATCHDOG_MS+'ms، إعادة محاولة:',src);
+        fail();
+      },WATCHDOG_MS);
+      try{audio.load();}catch(e){ fail(); }
     }
 
     updateProgress();
